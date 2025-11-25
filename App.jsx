@@ -1,3 +1,258 @@
+import React, { useState, useMemo, useEffect, useRef } from 'react';
+import { 
+  LayoutDashboard, 
+  Users, 
+  Phone, 
+  DollarSign, 
+  Calendar as CalendarIcon, 
+  TrendingUp, 
+  CheckCircle, 
+  AlertCircle, 
+  Search, 
+  Filter, 
+  Plus, 
+  Edit2,
+  Save,
+  X,
+  LogOut,
+  Facebook,
+  Loader2,
+  MessageCircle,
+  Mail,
+  FileSpreadsheet,
+  Trash2,
+  FileText,
+  Image as ImageIcon,
+  Download,
+  Paperclip,
+  Grid,
+  List as ListIcon,
+  Briefcase,
+  Clock,
+  MessageSquare,
+  UploadCloud,
+  PieChart as PieChartIcon,
+  BarChart2,
+  Activity,
+  Target,
+  HelpCircle,
+  GripVertical,
+  ChevronDown,
+  MoreHorizontal
+} from 'lucide-react';
+import { 
+  BarChart, 
+  Bar, 
+  XAxis, 
+  YAxis, 
+  CartesianGrid, 
+  Tooltip, 
+  ResponsiveContainer,
+  LineChart,
+  Line,
+  Legend,
+  PieChart,
+  Pie,
+  Cell,
+  AreaChart,
+  Area
+} from 'recharts';
+
+// --- CONFIGURACIÓN Y DATOS ---
+
+const STATUS_CONFIG = {
+  'Nuevo': { color: 'bg-blue-50 text-blue-700 border-blue-100', fill: '#3b82f6', label: 'Nuevo' },
+  'Contactando': { color: 'bg-yellow-50 text-yellow-700 border-yellow-100', fill: '#eab308', label: 'Contactando' },
+  'Contactado': { color: 'bg-indigo-50 text-indigo-700 border-indigo-100', fill: '#6366f1', label: 'Contactado' },
+  'Calificado': { color: 'bg-purple-50 text-purple-700 border-purple-100', fill: '#a855f7', label: 'Calificado' },
+  'No Calificado': { color: 'bg-slate-100 text-slate-600 border-slate-200', fill: '#94a3b8', label: 'No Calificado' },
+  'Interesado': { color: 'bg-teal-50 text-teal-700 border-teal-100', fill: '#14b8a6', label: 'Interesado' },
+  'Cita Agendada': { color: 'bg-orange-50 text-orange-700 border-orange-100', fill: '#f97316', label: 'Cita Agendada' },
+  'En Negociación': { color: 'bg-pink-50 text-pink-700 border-pink-100', fill: '#ec4899', label: 'En Negociación' },
+  'Ganado': { color: 'bg-green-50 text-green-700 border-green-100', fill: '#22c55e', label: 'Ganado' },
+  'Perdido': { color: 'bg-red-50 text-red-700 border-red-100', fill: '#ef4444', label: 'Perdido' },
+  'Seguimiento': { color: 'bg-gray-50 text-gray-700 border-gray-100', fill: '#64748b', label: 'Seguimiento' },
+  'No Contactable': { color: 'bg-slate-200 text-slate-600 border-slate-300', fill: '#475569', label: 'No Contactable' }
+};
+
+const PRIORITIES = {
+  '🔥 Alta': 'text-red-600 bg-red-50 border border-red-100',
+  '⚡ Media': 'text-orange-600 bg-orange-50 border border-orange-100',
+  '🔵 Normal': 'text-blue-600 bg-blue-50 border border-blue-100',
+  '⚪ Baja': 'text-slate-500 bg-slate-50 border border-slate-200'
+};
+
+const CHART_COLORS = ['#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#ec4899'];
+
+const INITIAL_ASSETS = [
+  { id: 1, name: "Brochure Corporativo 2025", type: "pdf", size: "2.4 MB", date: "2024-11-01" },
+  { id: 2, name: "Kit Redes Sociales - Q4", type: "zip", size: "15 MB", date: "2024-10-28" },
+  { id: 3, name: "Plantilla Email Bienvenida", type: "doc", size: "150 KB", date: "2024-09-15" },
+  { id: 4, name: "Presentación de Ventas SaaS", type: "ppt", size: "5.1 MB", date: "2024-11-10" },
+  { id: 5, name: "Logo Pack (SVG/PNG)", type: "image", size: "8 MB", date: "2024-01-20" },
+  { id: 6, name: "Caso de Éxito - Finanzas", type: "pdf", size: "1.2 MB", date: "2024-11-05" },
+  { id: 7, name: "Contrato Marco 2025", type: "pdf", size: "1.8 MB", date: "2024-11-15" },
+  { id: 8, name: "Flyer Promocional", type: "image", size: "3.2 MB", date: "2024-11-18" },
+];
+
+const INITIAL_DATA = [
+  { 
+    id: 1, 
+    nombre: "Juan Pérez García", 
+    telefono: "5548581058", 
+    email: "juan.731@email.com", 
+    fecha: "2025-11-01", 
+    fuente: "Instagram", 
+    estado: "Nuevo", 
+    prioridad: "🔥 Alta", 
+    vendedor: "Vendedor 1", 
+    monto: 0, 
+    lastContact: "2025-11-20", 
+    nextAction: "2025-11-26", 
+    intentos: 1,
+    canalPref: "WhatsApp",
+    tieneAfore: "Sí",
+    edad52: "No",
+    nivelInteres: "Alto",
+    notas: "Cliente busca diversificar.", 
+    fechaCierre: "",
+    motivoPerdida: "",
+    attachments: [] 
+  },
+  { 
+    id: 2, 
+    nombre: "María López", 
+    telefono: "5518212585", 
+    email: "maria.949@email.com", 
+    fecha: "2025-11-02", 
+    fuente: "Facebook", 
+    estado: "Contactando", 
+    prioridad: "🔥 Alta", 
+    vendedor: "Vendedor 1", 
+    monto: 0, 
+    lastContact: "2025-11-21", 
+    nextAction: "2025-11-25", 
+    intentos: 3,
+    canalPref: "Llamada",
+    tieneAfore: "No sé",
+    edad52: "Sí",
+    nivelInteres: "Medio",
+    notas: "Llamar por la tarde.", 
+    fechaCierre: "",
+    motivoPerdida: "",
+    attachments: [] 
+  },
+  { 
+    id: 3, 
+    nombre: "Carlos Rodríguez", 
+    telefono: "5517995718", 
+    email: "carlos.665@email.com", 
+    fecha: "2025-11-03", 
+    fuente: "WhatsApp", 
+    estado: "Ganado", 
+    prioridad: "🔵 Normal", 
+    vendedor: "Vendedor 2", 
+    monto: 25000, 
+    lastContact: "2025-11-15", 
+    nextAction: "2025-12-01", 
+    intentos: 5,
+    canalPref: "Email",
+    tieneAfore: "Sí",
+    edad52: "Sí",
+    nivelInteres: "Alto",
+    notas: "Contrato firmado.", 
+    fechaCierre: "2025-11-18",
+    motivoPerdida: "",
+    attachments: ["contrato.pdf"] 
+  }
+];
+
+const EMPTY_LEAD = {
+  id: null,
+  nombre: "",
+  telefono: "",
+  email: "",
+  fecha: new Date().toISOString().split('T')[0],
+  fuente: "Manual",
+  estado: "Nuevo",
+  prioridad: "🔵 Normal",
+  vendedor: "Vendedor 1",
+  monto: 0,
+  notas: "",
+  lastContact: "",
+  nextAction: "",
+  intentos: 0,
+  canalPref: "WhatsApp",
+  tieneAfore: "No sé",
+  edad52: "No",
+  nivelInteres: "Medio",
+  fechaCierre: "",
+  motivoPerdida: "",
+  attachments: []
+};
+
+// --- COMPONENTES AUXILIARES ---
+
+const CustomTooltip = ({ active, payload, label }) => {
+  if (active && payload && payload.length) {
+    return (
+      <div className="bg-white p-4 border border-slate-100 shadow-xl rounded-xl text-sm">
+        <p className="font-bold text-slate-800 mb-2 border-b border-slate-100 pb-1">{label}</p>
+        {payload.map((entry, index) => (
+          <p key={index} className="flex items-center gap-2" style={{ color: entry.color || entry.payload.fill }}>
+            <span className="w-2 h-2 rounded-full" style={{ backgroundColor: entry.color || entry.payload.fill }}></span>
+            <span className="font-medium">{entry.name}:</span> 
+            <span className="font-bold">{entry.value}</span>
+          </p>
+        ))}
+      </div>
+    );
+  }
+  return null;
+};
+
+const StatCard = ({ title, value, subtext, icon: Icon, color, bgColor }) => (
+  <div className="bg-white p-8 rounded-3xl shadow-sm border border-slate-100 hover:shadow-xl hover:-translate-y-1 transition-all duration-300 group relative overflow-hidden">
+    <div className="absolute top-0 right-0 p-6 opacity-5 group-hover:opacity-10 transition-opacity transform scale-150">
+      <Icon size={80} color={color} />
+    </div>
+    <div className="relative z-10">
+      <div className={`w-14 h-14 rounded-2xl flex items-center justify-center mb-5 shadow-sm transition-transform group-hover:scale-110`} style={{ backgroundColor: bgColor }}>
+        <Icon size={28} color={color} />
+      </div>
+      <h3 className="text-4xl font-bold text-slate-800 tracking-tight mb-2">{value}</h3>
+      <p className="text-sm font-semibold text-slate-500 uppercase tracking-wide">{title}</p>
+      {subtext && <p className="text-sm text-slate-400 mt-3 flex items-center gap-1 font-medium"><TrendingUp size={14}/> {subtext}</p>}
+    </div>
+  </div>
+);
+
+const Badge = ({ type, value }) => {
+  if (!value) return <span className="bg-gray-100 text-gray-400 text-xs px-2 py-0.5 rounded-full">N/A</span>;
+  const strValue = String(value);
+  let className = "px-3 py-1.5 rounded-full text-xs uppercase font-bold tracking-wide shadow-sm border";
+  
+  if (type === 'status') {
+    const config = STATUS_CONFIG[strValue] || STATUS_CONFIG['Nuevo'];
+    className += ` ${config.color}`;
+  } else if (type === 'priority') {
+    if(strValue.includes('Alta')) className += " bg-red-50 text-red-700 border-red-100";
+    else if(strValue.includes('Media')) className += " bg-orange-50 text-orange-700 border-orange-100";
+    else if(strValue.includes('Baja')) className += " bg-slate-50 text-slate-600 border-slate-200";
+    else className += " bg-blue-50 text-blue-700 border-blue-100";
+  }
+  return <span className={className}>{strValue}</span>;
+};
+
+const MenuButton = ({ active, onClick, icon: Icon, label }) => (
+  <button 
+    onClick={onClick} 
+    className={`w-full flex items-center gap-3 px-4 py-3.5 text-sm font-medium rounded-xl transition-all duration-200 ${active ? 'bg-blue-600 text-white shadow-lg shadow-blue-900/50' : 'text-slate-400 hover:bg-slate-800 hover:text-white'}`}
+  >
+    <Icon size={20} className={active ? 'text-white' : 'text-slate-500 group-hover:text-white'} /> 
+    {label}
+  </button>
+);
 
 export default function App() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
