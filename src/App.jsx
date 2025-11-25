@@ -58,7 +58,7 @@ import {
   Area
 } from 'recharts';
 
-// --- CONFIGURACIÓN Y DATOS ---
+// --- 1. CONFIGURACIÓN Y DATOS ---
 
 const STATUS_CONFIG = {
   'Nuevo': { color: 'bg-blue-50 text-blue-700 border-blue-100', fill: '#3b82f6', label: 'Nuevo' },
@@ -164,7 +164,99 @@ const INITIAL_DATA = [
     fechaCierre: "2025-11-18",
     motivoPerdida: "",
     attachments: ["contrato.pdf"] 
-  }
+  },
+  { 
+    id: 4, 
+    nombre: "Ana González", 
+    telefono: "5594428319", 
+    email: "ana.903@email.com", 
+    fecha: "2025-11-05", 
+    fuente: "Instagram", 
+    estado: "Cita Agendada", 
+    prioridad: "⚡ Media", 
+    vendedor: "Vendedor 2", 
+    monto: 0, 
+    lastContact: "2025-11-22", 
+    nextAction: "2025-11-27", 
+    intentos: 2,
+    canalPref: "WhatsApp",
+    tieneAfore: "Sí",
+    edad52: "No",
+    nivelInteres: "Medio",
+    notas: "Reunión de Zoom.", 
+    fechaCierre: "",
+    motivoPerdida: "",
+    attachments: [] 
+  },
+  { 
+    id: 5, 
+    nombre: "Roberto Diaz", 
+    telefono: "5512345678", 
+    email: "roberto@email.com", 
+    fecha: "2025-11-08", 
+    fuente: "Referido", 
+    estado: "En Negociación", 
+    prioridad: "🔥 Alta", 
+    vendedor: "Vendedor 1", 
+    monto: 0, 
+    lastContact: "2025-11-23", 
+    nextAction: "2025-11-28", 
+    intentos: 4,
+    canalPref: "Llamada",
+    tieneAfore: "Sí",
+    edad52: "Sí",
+    nivelInteres: "Alto",
+    notas: "Enviada propuesta v2.", 
+    fechaCierre: "",
+    motivoPerdida: "",
+    attachments: ["propuesta_v2.pdf"] 
+  },
+  { 
+    id: 6, 
+    nombre: "Lucía Mendez", 
+    telefono: "5587654321", 
+    email: "lucia@email.com", 
+    fecha: "2025-11-10", 
+    fuente: "Facebook", 
+    estado: "Ganado", 
+    prioridad: "🔥 Alta", 
+    vendedor: "Vendedor 1", 
+    monto: 40000, 
+    lastContact: "2025-11-18", 
+    nextAction: "2025-12-05", 
+    intentos: 2,
+    canalPref: "WhatsApp",
+    tieneAfore: "Sí",
+    edad52: "No",
+    nivelInteres: "Alto",
+    notas: "Onboarding pendiente.", 
+    fechaCierre: "2025-11-20",
+    motivoPerdida: "",
+    attachments: [] 
+  },
+  { 
+    id: 7, 
+    nombre: "Pedro Pascal", 
+    telefono: "5511122233", 
+    email: "pedro@email.com", 
+    fecha: "2025-11-12", 
+    fuente: "Web", 
+    estado: "Perdido", 
+    prioridad: "⚪ Baja", 
+    vendedor: "Vendedor 2", 
+    monto: 0, 
+    lastContact: "2025-11-15", 
+    nextAction: "", 
+    intentos: 6,
+    canalPref: "Email",
+    tieneAfore: "No",
+    edad52: "Sí",
+    nivelInteres: "Bajo",
+    notas: "Precio muy alto.", 
+    fechaCierre: "",
+    motivoPerdida: "Precio Alto",
+    attachments: [] 
+  },
 ];
 
 const EMPTY_LEAD = {
@@ -191,7 +283,7 @@ const EMPTY_LEAD = {
   attachments: []
 };
 
-// --- COMPONENTES AUXILIARES ---
+// --- 2. COMPONENTES DE UI ---
 
 const CustomTooltip = ({ active, payload, label }) => {
   if (active && payload && payload.length) {
@@ -244,15 +336,439 @@ const Badge = ({ type, value }) => {
   return <span className={className}>{strValue}</span>;
 };
 
-const MenuButton = ({ active, onClick, icon: Icon, label }) => (
-  <button 
-    onClick={onClick} 
-    className={`w-full flex items-center gap-3 px-4 py-3.5 text-sm font-medium rounded-xl transition-all duration-200 ${active ? 'bg-blue-600 text-white shadow-lg shadow-blue-900/50' : 'text-slate-400 hover:bg-slate-800 hover:text-white'}`}
-  >
-    <Icon size={20} className={active ? 'text-white' : 'text-slate-500 group-hover:text-white'} /> 
-    {label}
-  </button>
-);
+// --- 3. VISTAS ---
+
+const KanbanView = ({ leads, onEdit, onStatusChange, currentView }) => {
+  const allColumns = Object.keys(STATUS_CONFIG);
+  
+  // FILTRO CRÍTICO DE COLUMNAS:
+  // Si estamos en 'client-center', SOLO mostramos 'Ganado'.
+  // Si estamos en 'lead-center', mostramos TODO EXCEPTO 'Ganado'.
+  const columns = currentView === 'client-center' 
+    ? ['Ganado'] 
+    : allColumns.filter(c => c !== 'Ganado');
+
+  const [draggedLeadId, setDraggedLeadId] = useState(null);
+
+  const handleDragStart = (e, leadId) => {
+    setDraggedLeadId(leadId);
+    e.dataTransfer.effectAllowed = 'move';
+    e.target.style.opacity = '0.5';
+  };
+
+  const handleDragEnd = (e) => {
+    e.target.style.opacity = '1';
+    setDraggedLeadId(null);
+  };
+
+  const handleDragOver = (e) => {
+    e.preventDefault(); 
+    e.dataTransfer.dropEffect = 'move';
+  };
+
+  const handleDrop = (e, targetStatus) => {
+    e.preventDefault();
+    if (draggedLeadId) {
+      onStatusChange(draggedLeadId, targetStatus);
+    }
+  };
+  
+  return (
+    <div className="flex gap-8 overflow-x-auto pb-8 h-full items-start px-4">
+      {columns.map(status => {
+        const columnLeads = leads.filter(l => l.estado === status);
+        const config = STATUS_CONFIG[status];
+        
+        return (
+          <div 
+            key={status} 
+            className="min-w-[320px] w-[320px] flex-shrink-0 flex flex-col bg-slate-50/80 rounded-3xl border border-slate-200/60 h-full max-h-full shadow-sm"
+            onDragOver={handleDragOver}
+            onDrop={(e) => handleDrop(e, status)}
+          >
+            <div className="p-5 border-b border-slate-100 flex justify-between items-center sticky top-0 bg-slate-50/95 backdrop-blur-sm rounded-t-3xl z-10">
+              <div className="flex items-center gap-3">
+                <div className={`w-3 h-3 rounded-full ${config?.color?.split(' ')[0].replace('bg-', 'bg-') || 'bg-slate-400'} shadow-sm ring-2 ring-white`}></div>
+                <span className="font-bold text-slate-700 text-sm uppercase tracking-wide">{status}</span>
+              </div>
+              <span className="bg-white px-3 py-1 rounded-full text-xs text-slate-600 font-bold border border-slate-200 shadow-sm">
+                {columnLeads.length}
+              </span>
+            </div>
+            
+            <div className="p-4 space-y-4 overflow-y-auto flex-1 custom-scrollbar">
+              {columnLeads.map(lead => (
+                <div 
+                  key={lead.id} 
+                  draggable
+                  onDragStart={(e) => handleDragStart(e, lead.id)}
+                  onDragEnd={handleDragEnd}
+                  onClick={() => onEdit(lead)} 
+                  className="bg-white p-5 rounded-2xl shadow-sm border border-slate-100 hover:shadow-lg hover:-translate-y-1 cursor-grab active:cursor-grabbing transition-all group relative hover:border-blue-200"
+                >
+                  <div className="absolute top-4 right-4 text-slate-300 opacity-0 group-hover:opacity-100 cursor-move transition-opacity">
+                    <GripVertical size={18} />
+                  </div>
+                  
+                  <div className="mb-4">
+                    <h4 className="font-bold text-slate-800 text-base truncate pr-6 mb-1">{lead.nombre}</h4>
+                    <p className="text-xs text-slate-400 truncate font-medium">{lead.empresa || 'Particular'} • {lead.email}</p>
+                  </div>
+
+                  <div className="flex items-center justify-between mb-4">
+                     {lead.monto > 0 ? (
+                       <span className="text-xs font-bold text-green-700 bg-green-50 px-3 py-1.5 rounded-lg border border-green-100">
+                         ${lead.monto.toLocaleString()}
+                       </span>
+                     ) : <span className="text-[10px] text-slate-400 italic bg-slate-50 px-3 py-1.5 rounded-lg">Sin monto</span>}
+                     {lead.prioridad && <Badge type="priority" value={lead.prioridad} />}
+                  </div>
+
+                  <div className="flex items-center justify-between pt-4 border-t border-slate-50">
+                     <div className="flex items-center gap-2 text-xs text-slate-500 font-medium">
+                       <Clock size={14} className="text-slate-400"/> {lead.lastContact || 'Sin contacto'}
+                     </div>
+                     <div className="w-7 h-7 rounded-full bg-slate-100 flex items-center justify-center text-[10px] font-bold text-slate-600 border border-slate-200 shadow-sm">
+                        {lead.vendedor?.split(' ')[1] || '1'}
+                     </div>
+                  </div>
+                </div>
+              ))}
+              {columnLeads.length === 0 && (
+                <div className="h-32 flex flex-col items-center justify-center text-slate-400 border-2 border-dashed border-slate-200 rounded-2xl bg-slate-50/30 mx-2">
+                  <span className="text-sm font-medium">
+                    {currentView === 'lead-center' && status === 'Ganado' ? '¡Arrastra aquí para cerrar!' : 'Sin registros'}
+                  </span>
+                </div>
+              )}
+            </div>
+          </div>
+        );
+      })}
+    </div>
+  );
+};
+
+const CalendarView = ({ leads, onEdit }) => {
+  const days = Array.from({length: 35}, (_, i) => i + 1); 
+  return (
+    <div className="bg-white rounded-3xl shadow-sm border border-slate-200 p-8 h-full overflow-y-auto">
+      <div className="flex justify-between items-center mb-8">
+        <h3 className="text-xl font-bold text-slate-800 flex items-center gap-3"><CalendarIcon className="text-blue-600" size={24}/> Calendario de Actividades</h3>
+        <span className="text-sm font-bold text-slate-600 bg-slate-100 px-4 py-2 rounded-xl border border-slate-200">Noviembre 2025</span>
+      </div>
+      
+      <div className="grid grid-cols-7 gap-px bg-slate-200 border border-slate-200 rounded-2xl overflow-hidden shadow-sm">
+        {['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb'].map(d => (
+          <div key={d} className="bg-slate-50 p-4 text-center text-xs font-bold text-slate-500 uppercase tracking-wider">{d}</div>
+        ))}
+        {days.map(day => {
+            const dayStr = day > 30 ? day - 30 : day; 
+            const dateStr = `2025-11-${dayStr.toString().padStart(2, '0')}`;
+            const events = leads.filter(l => l.nextAction === dateStr);
+            const isToday = dayStr === 25; 
+            return (
+              <div key={day} className={`bg-white min-h-[140px] p-3 transition-colors hover:bg-blue-50/30 ${isToday ? 'bg-blue-50/50' : ''}`}>
+                <div className={`text-right text-sm font-bold mb-3 ${isToday ? 'text-blue-600' : 'text-slate-400'}`}>
+                  {isToday && <span className="mr-2 text-[10px] bg-blue-600 text-white px-2 py-0.5 rounded-full font-bold uppercase">Hoy</span>}
+                  {dayStr}
+                </div>
+                <div className="space-y-2">
+                  {events.map(ev => (
+                    <div key={ev.id} onClick={() => onEdit(ev)} className="text-[11px] p-2 rounded-lg bg-blue-50 text-blue-800 truncate cursor-pointer hover:bg-blue-100 border border-blue-100 shadow-sm flex items-center gap-1.5 font-medium transition-colors">
+                      <div className="w-2 h-2 rounded-full bg-blue-500 flex-shrink-0"></div>
+                      {ev.nombre}
+                    </div>
+                  ))}
+                </div>
+              </div>
+            );
+        })}
+      </div>
+    </div>
+  );
+};
+
+const LoginScreen = ({ onLogin }) => {
+  const [user, setUser] = useState('');
+  const [pass, setPass] = useState('');
+  const [error, setError] = useState('');
+  
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    setError('');
+    if (user === 'admin' && pass === '1234') onLogin({ id: 'adm01', name: 'Admin General', role: 'admin', avatar: 'AD' });
+    else if (user === 'supervisor' && pass === '1234') onLogin({ id: 'sup01', name: 'José Carola', role: 'supervisor', avatar: 'JC' });
+    else if (user === 'vendedor1' && pass === '1234') onLogin({ id: 'ven01', name: 'Vendedor 1', role: 'vendedor', assignedName: 'Vendedor 1', avatar: 'V1' });
+    else setError('Credenciales inválidas');
+  };
+
+  return (
+    <div className="min-h-screen bg-[#0f172a] flex items-center justify-center p-4 relative overflow-hidden">
+      <div className="absolute top-0 left-0 w-full h-full overflow-hidden z-0">
+        <div className="absolute -top-24 -left-24 w-96 h-96 bg-blue-600 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-blob"></div>
+        <div className="absolute top-0 right-0 w-96 h-96 bg-purple-600 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-blob animation-delay-2000"></div>
+        <div className="absolute -bottom-32 left-20 w-96 h-96 bg-indigo-600 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-blob animation-delay-4000"></div>
+      </div>
+
+      <div className="bg-white/10 backdrop-blur-lg border border-white/20 rounded-3xl shadow-2xl w-full max-w-md overflow-hidden z-10">
+        <div className="p-8 text-center border-b border-white/10">
+          <div className="w-20 h-20 bg-gradient-to-tr from-blue-500 to-purple-600 rounded-2xl mx-auto flex items-center justify-center mb-6 shadow-lg transform rotate-3">
+            <span className="text-white font-bold text-3xl">CS</span>
+          </div>
+          <h1 className="text-3xl font-bold text-white mb-2">Bienvenido</h1>
+          <p className="text-blue-200 text-sm">CRM Conecta Strategy v2.0</p>
+        </div>
+        
+        <div className="p-8 bg-white">
+          <form onSubmit={handleSubmit} className="space-y-6">
+            <div>
+              <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Usuario</label>
+              <input 
+                type="text" 
+                className="w-full p-4 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:bg-white outline-none transition-all font-medium text-slate-700 text-sm" 
+                placeholder="Ingresa tu usuario"
+                value={user} 
+                onChange={(e) => setUser(e.target.value)} 
+              />
+            </div>
+            <div>
+              <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Contraseña</label>
+              <input 
+                type="password" 
+                className="w-full p-4 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:bg-white outline-none transition-all font-medium text-slate-700 text-sm" 
+                placeholder="••••••••"
+                value={pass} 
+                onChange={(e) => setPass(e.target.value)} 
+              />
+            </div>
+            {error && (
+              <div className="p-3 bg-red-50 text-red-600 text-xs rounded-lg flex items-center gap-2 font-medium">
+                <AlertCircle size={14}/> {error}
+              </div>
+            )}
+            <button type="submit" className="w-full bg-[#0f172a] hover:bg-slate-800 text-white font-bold py-4 rounded-xl transition-all shadow-lg transform hover:-translate-y-0.5 text-sm">
+              Iniciar Sesión
+            </button>
+          </form>
+          <div className="mt-6 text-center">
+             <p className="text-xs text-slate-400">Demo Access: admin / 1234</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+// --- 4. MODAL DE EDICIÓN ---
+
+const LeadFormModal = ({ lead, isOpen, onClose, onSave, isReadOnly }) => {
+  if (!isOpen) return null;
+  
+  const [formData, setFormData] = useState(lead || EMPTY_LEAD);
+  const fileInputRef = useRef(null);
+
+  useEffect(() => { 
+    if (lead) setFormData(lead); 
+  }, [lead]);
+
+  if (!formData) return null;
+
+  const handleChange = (e) => {
+    setFormData({ ...formData, [e.target.name]: e.target.value });
+  };
+
+  const handleFileChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      const newAttachments = [...(formData.attachments || []), file.name];
+      setFormData({ ...formData, attachments: newAttachments });
+    }
+  };
+
+  return (
+    <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center z-50 p-4 overflow-y-auto transition-opacity">
+      <div className="bg-white rounded-3xl shadow-2xl w-full max-w-5xl overflow-hidden flex flex-col my-8 transform transition-all scale-100">
+        <div className="bg-white px-8 py-6 border-b border-slate-100 flex justify-between items-center sticky top-0 z-10">
+          <div>
+            <h2 className="text-2xl font-bold text-slate-800 flex items-center gap-3">
+              {!formData.id ? <div className="p-2 bg-blue-50 rounded-lg text-blue-600"><Plus size={24}/></div> : <div className="p-2 bg-indigo-50 rounded-lg text-indigo-600"><Edit2 size={24}/></div>}
+              {!formData.id ? 'Nuevo Lead' : 'Expediente del Cliente'}
+            </h2>
+            <p className="text-sm text-slate-500 mt-1 ml-12">Complete la información detallada del prospecto.</p>
+          </div>
+          <button onClick={onClose} className="p-2 hover:bg-slate-100 rounded-full transition-colors text-slate-400 hover:text-slate-600">
+            <X size={24} />
+          </button>
+        </div>
+        
+        <form onSubmit={(e) => { e.preventDefault(); onSave(formData); }} className="p-8 bg-[#FAFAFA] overflow-y-auto max-h-[calc(100vh-200px)] custom-scrollbar">
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+            <div className="lg:col-span-8 space-y-8">
+              <section className="bg-white p-8 rounded-3xl shadow-sm border border-slate-100">
+                 <h3 className="text-sm font-bold text-slate-900 uppercase tracking-wider mb-6 flex items-center gap-3 pb-2 border-b border-slate-50">
+                   <div className="w-1.5 h-5 bg-blue-500 rounded-full"></div>
+                   Información Personal
+                 </h3>
+                 <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                   <div className="md:col-span-2">
+                     <label className="block text-xs font-bold text-slate-500 uppercase mb-2">Nombre Completo</label>
+                     <input disabled={isReadOnly} required type="text" name="nombre" value={formData.nombre || ''} onChange={handleChange} className="w-full input-premium text-base" placeholder="Ej. Roberto Gómez Bolaños"/>
+                   </div>
+                   <div>
+                      <label className="block text-xs font-bold text-slate-500 uppercase mb-2">Teléfono</label>
+                      <div className="flex gap-3">
+                         <input disabled={isReadOnly} required type="tel" name="telefono" value={formData.telefono || ''} onChange={handleChange} className="w-full input-premium text-base" placeholder="55 1234 5678"/>
+                      </div>
+                   </div>
+                   <div>
+                      <label className="block text-xs font-bold text-slate-500 uppercase mb-2">Email</label>
+                      <div className="flex gap-3">
+                        <input disabled={isReadOnly} type="email" name="email" value={formData.email || ''} onChange={handleChange} className="w-full input-premium text-base" placeholder="correo@ejemplo.com"/>
+                      </div>
+                   </div>
+                 </div>
+              </section>
+
+              <section className="bg-white p-8 rounded-3xl shadow-sm border border-slate-100">
+                 <h3 className="text-sm font-bold text-slate-900 uppercase tracking-wider mb-6 flex items-center gap-3 pb-2 border-b border-slate-50">
+                   <div className="w-1.5 h-5 bg-purple-500 rounded-full"></div>
+                   Perfilamiento y Origen
+                 </h3>
+                 <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+                    <div>
+                      <label className="label-premium mb-2">Tiene AFORE</label>
+                      <select disabled={isReadOnly} name="tieneAfore" value={formData.tieneAfore || 'No sé'} onChange={handleChange} className="w-full select-premium text-base">
+                        <option value="Sí">Sí</option>
+                        <option value="No">No</option>
+                        <option value="No sé">No sé</option>
+                      </select>
+                    </div>
+                    <div>
+                      <label className="label-premium mb-2">Edad 52+</label>
+                      <select disabled={isReadOnly} name="edad52" value={formData.edad52 || 'No'} onChange={handleChange} className="w-full select-premium text-base">
+                        <option value="Sí">Sí</option>
+                        <option value="No">No</option>
+                      </select>
+                    </div>
+                    <div>
+                      <label className="label-premium mb-2">Nivel Interés</label>
+                      <div className="relative">
+                        <select disabled={isReadOnly} name="nivelInteres" value={formData.nivelInteres || 'Medio'} onChange={handleChange} className="w-full select-premium appearance-none text-base">
+                          <option value="Alto">Alto 🔥</option>
+                          <option value="Medio">Medio ⚡</option>
+                          <option value="Bajo">Bajo ⚪</option>
+                        </select>
+                        <div className="absolute right-4 top-4 pointer-events-none text-slate-400"><ChevronDown size={16}/></div>
+                      </div>
+                    </div>
+                    <div className="md:col-span-2">
+                      <label className="label-premium mb-2">Fuente de Captura</label>
+                      <div className="flex gap-3 overflow-x-auto pb-2">
+                        {['Instagram', 'Facebook', 'WhatsApp', 'Web', 'Referido'].map(src => (
+                          <button 
+                            key={src}
+                            type="button"
+                            onClick={() => setFormData({...formData, fuente: src})}
+                            className={`px-5 py-2.5 rounded-xl text-sm font-medium border transition-all ${formData.fuente === src ? 'bg-slate-800 text-white border-slate-800 shadow-md' : 'bg-white text-slate-600 border-slate-200 hover:bg-slate-50'}`}
+                          >
+                            {src}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                 </div>
+              </section>
+
+              <section className="bg-white p-8 rounded-3xl shadow-sm border border-slate-100">
+                <h3 className="text-sm font-bold text-slate-900 uppercase tracking-wider mb-4">Notas y Comentarios</h3>
+                <textarea disabled={isReadOnly} name="notas" value={formData.notas || ''} onChange={handleChange} rows="4" className="w-full input-premium resize-none text-base" placeholder="Escribe detalles importantes sobre la negociación..."></textarea>
+              </section>
+            </div>
+
+            <div className="lg:col-span-4 space-y-8">
+              <div className="bg-white p-8 rounded-3xl shadow-lg border border-slate-100">
+                <h3 className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-6">Estado del Lead</h3>
+                <div className="mb-8">
+                  <label className="label-premium mb-2">Fase Actual</label>
+                  <select disabled={isReadOnly} name="estado" value={formData.estado || 'Nuevo'} onChange={handleChange} className="w-full select-premium font-bold text-slate-700 bg-slate-50 text-base">
+                      {Object.keys(STATUS_CONFIG).map(s => <option key={s} value={s}>{s}</option>)}
+                  </select>
+                </div>
+                <div className="mb-8">
+                  <label className="label-premium mb-2">Prioridad</label>
+                  <div className="grid grid-cols-2 gap-3">
+                    {Object.keys(PRIORITIES).map(p => (
+                      <button 
+                        key={p} 
+                        type="button" 
+                        onClick={() => setFormData({...formData, prioridad: p})}
+                        className={`text-xs py-3 px-2 rounded-xl border transition-all ${formData.prioridad === p ? 'bg-blue-50 border-blue-200 text-blue-700 font-bold shadow-sm ring-1 ring-blue-200' : 'bg-white border-slate-200 text-slate-500 hover:bg-slate-50'}`}
+                      >
+                        {p}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+                <div className="pt-8 border-t border-slate-100 space-y-6">
+                   <div>
+                      <label className="label-premium mb-2">Próx. Seguimiento</label>
+                      <input disabled={isReadOnly} type="date" name="nextAction" value={formData.nextAction || ''} onChange={handleChange} className="w-full input-premium bg-blue-50 border-blue-100 text-blue-800 font-medium text-base" />
+                   </div>
+                   <div>
+                      <label className="label-premium mb-2">Monto Potencial ($)</label>
+                      <input disabled={isReadOnly} type="number" name="monto" value={formData.monto || 0} onChange={handleChange} className="w-full input-premium text-right font-mono text-xl font-bold text-green-600" />
+                   </div>
+                </div>
+              </div>
+
+              <div className="bg-white p-8 rounded-3xl shadow-sm border border-slate-100">
+                 <div className="flex justify-between items-center mb-6">
+                    <h3 className="text-xs font-bold text-slate-400 uppercase tracking-wider">Documentos</h3>
+                    <button type="button" onClick={() => fileInputRef.current.click()} className="text-blue-600 text-xs hover:underline flex items-center gap-1 font-bold"><UploadCloud size={16}/> SUBIR</button>
+                    <input type="file" ref={fileInputRef} onChange={handleFileChange} className="hidden" />
+                 </div>
+                 <div className="space-y-3">
+                    {formData.attachments && formData.attachments.length > 0 ? (
+                      formData.attachments.map((file, i) => (
+                        <div key={i} className="flex items-center justify-between p-4 bg-slate-50 rounded-xl border border-slate-100 group hover:border-blue-100 transition-colors">
+                          <div className="flex items-center gap-3">
+                            <div className="w-10 h-10 bg-white rounded-lg flex items-center justify-center text-red-500 shadow-sm"><FileText size={20}/></div>
+                            <span className="text-sm text-slate-600 font-medium truncate max-w-[120px]">{typeof file === 'string' ? file : 'Archivo'}</span>
+                          </div>
+                          <button type="button" className="text-slate-300 hover:text-red-500 opacity-0 group-hover:opacity-100 transition-opacity"><X size={16}/></button>
+                        </div>
+                      ))
+                    ) : (
+                      <div className="text-center py-8 bg-slate-50 rounded-2xl border-2 border-dashed border-slate-200">
+                        <p className="text-sm text-slate-400">Sin archivos adjuntos</p>
+                      </div>
+                    )}
+                 </div>
+              </div>
+            </div>
+          </div>
+
+          <div className="mt-8 pt-6 border-t border-slate-200 flex justify-between items-center">
+             <button type="button" className="text-red-500 text-sm font-medium hover:bg-red-50 px-6 py-3 rounded-xl transition-colors flex items-center gap-2">
+               <Trash2 size={18}/> Eliminar Lead
+             </button>
+             <div className="flex gap-4">
+                <button type="button" onClick={onClose} className="px-8 py-4 text-sm font-bold text-slate-600 hover:bg-slate-100 rounded-xl transition-colors">
+                  Cancelar
+                </button>
+                <button type="submit" className="px-10 py-4 text-sm font-bold bg-slate-900 text-white rounded-xl hover:bg-slate-800 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 transition-all flex items-center gap-2">
+                  <Save size={20}/> Guardar Cambios
+                </button>
+             </div>
+          </div>
+        </form>
+      </div>
+    </div>
+  );
+};
+
+// --- 5. APLICACIÓN PRINCIPAL ---
 
 export default function App() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
@@ -836,6 +1352,7 @@ export default function App() {
 }
 
 // --- Helpers ---
+const MenuButton = ({ active, onClick, icon: Icon, label }) => (
   <button 
     onClick={onClick} 
     className={`w-full flex items-center gap-3 px-4 py-3.5 text-sm font-medium rounded-xl transition-all duration-200 ${active ? 'bg-blue-600 text-white shadow-lg shadow-blue-900/50' : 'text-slate-400 hover:bg-slate-800 hover:text-white'}`}
