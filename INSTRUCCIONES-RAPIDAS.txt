@@ -1,0 +1,58 @@
+🚀 PUBLICAR TU CRM - PASOS RÁPIDOS
+===================================
+
+📌 OPCIÓN 1: VERCEL CLI (MÁS RÁPIDO - 2 MINUTOS)
+------------------------------------------------
+1. Instala Vercel CLI:
+   npm install -g vercel
+
+2. Ve a tu carpeta del proyecto:
+   cd ruta/a/tu/proyecto
+
+3. Ejecuta:
+   vercel
+
+4. Sigue las instrucciones (presiona Enter en todo)
+5. ¡Listo! Te dará un link como: tu-crm.vercel.app
+
+
+📌 OPCIÓN 2: VERCEL WEB (VISUAL - 5 MINUTOS)  
+--------------------------------------------
+1. Sube tu código a GitHub:
+   - Ve a github.com/new
+   - Crea repo "conecta-crm-demo"
+   - Sube tus archivos
+
+2. Ve a vercel.com
+   - Sign up con GitHub
+   - Click "Add New" → "Project"
+   - Importa tu repo
+   - Deploy automático
+
+3. ¡Listo! Link generado
+
+
+📦 ARCHIVOS QUE NECESITAS
+--------------------------
+✅ package.json (descargado)
+✅ vite.config.js (descargado)  
+✅ index.html (descargado)
+✅ src/main.jsx (descargado)
+✅ src/App.jsx (tu código React actual)
+
+
+⚠️ IMPORTANTE PARA DEMO
+------------------------
+• Login: admin / 1234
+• Los datos se borran al refrescar (normal en demo)
+• No uses datos reales
+• Funciona perfecto para mostrar al cliente
+
+
+🆘 SI TIENES PROBLEMAS
+-----------------------
+1. Verifica que todos los archivos estén en su lugar
+2. Verifica que App.jsx tenga todo tu código React
+3. Pregúntame y te ayudo con el paso específico
+
+¡Éxito con tu demo! 🎉

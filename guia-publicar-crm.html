@@ -1,0 +1,398 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Publicar CRM - Guía Paso a Paso</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        .step { transition: all 0.3s ease; }
+        .step:hover { transform: translateX(8px); }
+        .command-box { 
+            background: #1e293b; 
+            color: #e2e8f0;
+            font-family: 'Courier New', monospace;
+        }
+        .copy-btn:hover { background: #3b82f6; }
+        .platform-card { 
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+        .platform-card:hover { 
+            transform: scale(1.05);
+            box-shadow: 0 20px 25px -5px rgb(0 0 0 / 0.2);
+        }
+        .platform-card.selected {
+            border: 3px solid #3b82f6;
+            background: linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%);
+        }
+        .step-content { display: none; }
+        .step-content.active { display: block; }
+        @keyframes pulse-slow { 
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+        .pulse-slow { animation: pulse-slow 2s infinite; }
+    </style>
+</head>
+<body class="bg-gradient-to-br from-slate-900 via-blue-900 to-slate-900 min-h-screen p-8">
+    <div class="max-w-5xl mx-auto">
+        
+        <!-- Header -->
+        <div class="bg-white rounded-3xl shadow-2xl p-8 mb-8 border-4 border-blue-400">
+            <div class="flex items-center justify-between mb-4">
+                <div>
+                    <h1 class="text-4xl font-bold text-slate-900 mb-2">🚀 Publicar Tu CRM - Demo</h1>
+                    <p class="text-slate-600">Conecta Strategy • Listo para compartir con tu cliente</p>
+                </div>
+                <div class="text-right">
+                    <div class="text-5xl">🎯</div>
+                    <div class="text-sm text-slate-500 font-semibold mt-2">5-10 min</div>
+                </div>
+            </div>
+            <div class="bg-green-50 border-l-4 border-green-500 p-4 rounded-lg">
+                <p class="text-green-800 font-medium">✅ Tu código está listo para demo. Solo necesitas publicarlo.</p>
+            </div>
+        </div>
+
+        <!-- Selector de Plataforma -->
+        <div class="bg-white rounded-3xl shadow-2xl p-8 mb-8">
+            <h2 class="text-2xl font-bold text-slate-900 mb-6">Paso 1: Elige tu plataforma (Recomendada: Vercel)</h2>
+            
+            <div class="grid md:grid-cols-3 gap-6 mb-8">
+                <div class="platform-card selected bg-blue-50 rounded-2xl p-6 border-2 border-blue-200" onclick="selectPlatform('vercel')">
+                    <div class="text-4xl mb-4">▲</div>
+                    <h3 class="font-bold text-xl mb-2">Vercel</h3>
+                    <div class="text-green-600 font-bold mb-2">✅ RECOMENDADA</div>
+                    <ul class="text-sm text-slate-600 space-y-1">
+                        <li>✓ Gratis forever</li>
+                        <li>✓ Deploy en 2 min</li>
+                        <li>✓ SSL automático</li>
+                        <li>✓ Link instantáneo</li>
+                    </ul>
+                </div>
+
+                <div class="platform-card bg-slate-50 rounded-2xl p-6 border-2 border-slate-200" onclick="selectPlatform('netlify')">
+                    <div class="text-4xl mb-4">🌐</div>
+                    <h3 class="font-bold text-xl mb-2">Netlify</h3>
+                    <div class="text-blue-600 font-bold mb-2">✓ Buena alternativa</div>
+                    <ul class="text-sm text-slate-600 space-y-1">
+                        <li>✓ Gratis</li>
+                        <li>✓ Fácil setup</li>
+                        <li>✓ Drag & drop</li>
+                        <li>✓ Forms integrados</li>
+                    </ul>
+                </div>
+
+                <div class="platform-card bg-slate-50 rounded-2xl p-6 border-2 border-slate-200" onclick="selectPlatform('github')">
+                    <div class="text-4xl mb-4">📄</div>
+                    <h3 class="font-bold text-xl mb-2">GitHub Pages</h3>
+                    <div class="text-slate-600 font-bold mb-2">Básico</div>
+                    <ul class="text-sm text-slate-600 space-y-1">
+                        <li>✓ Gratis</li>
+                        <li>✓ Simple</li>
+                        <li>⚠️ Solo HTML estático</li>
+                        <li>⚠️ Más pasos</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <!-- Método Vercel -->
+        <div id="vercel-steps" class="step-content active">
+            
+            <!-- Paso 2 -->
+            <div class="bg-white rounded-3xl shadow-2xl p-8 mb-8">
+                <div class="flex items-center gap-4 mb-6">
+                    <div class="w-12 h-12 bg-blue-600 text-white rounded-full flex items-center justify-center text-xl font-bold">2</div>
+                    <h2 class="text-2xl font-bold text-slate-900">Prepara tus archivos</h2>
+                </div>
+
+                <div class="bg-slate-50 rounded-2xl p-6 mb-6">
+                    <h3 class="font-bold text-slate-800 mb-4">📁 Estructura necesaria:</h3>
+                    <div class="command-box rounded-xl p-4 text-sm">
+<pre>mi-crm/
+├── package.json          ← Crea este archivo
+├── index.html           ← Tu archivo actual
+└── vite.config.js       ← Crea este archivo</pre>
+                    </div>
+                </div>
+
+                <div class="space-y-4">
+                    <div class="bg-blue-50 border-l-4 border-blue-600 p-5 rounded-lg">
+                        <div class="flex justify-between items-start mb-3">
+                            <div>
+                                <h4 class="font-bold text-blue-900 mb-2">📄 Archivo: <code>package.json</code></h4>
+                                <p class="text-sm text-blue-800">Copia este contenido y guárdalo como package.json</p>
+                            </div>
+                            <button onclick="copyCode('package-json')" class="copy-btn bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm font-bold transition">
+                                📋 Copiar
+                            </button>
+                        </div>
+                        <div class="command-box rounded-xl p-4 text-xs overflow-x-auto">
+<pre id="package-json">{
+  "name": "conecta-crm",
+  "version": "1.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
+    "lucide-react": "^0.263.1",
+    "recharts": "^2.8.0"
+  },
+  "devDependencies": {
+    "@vitejs/plugin-react": "^4.0.3",
+    "vite": "^4.4.5"
+  }
+}</pre>
+                        </div>
+                    </div>
+
+                    <div class="bg-purple-50 border-l-4 border-purple-600 p-5 rounded-lg">
+                        <div class="flex justify-between items-start mb-3">
+                            <div>
+                                <h4 class="font-bold text-purple-900 mb-2">⚙️ Archivo: <code>vite.config.js</code></h4>
+                                <p class="text-sm text-purple-800">Copia este contenido y guárdalo como vite.config.js</p>
+                            </div>
+                            <button onclick="copyCode('vite-config')" class="copy-btn bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-lg text-sm font-bold transition">
+                                📋 Copiar
+                            </button>
+                        </div>
+                        <div class="command-box rounded-xl p-4 text-xs overflow-x-auto">
+<pre id="vite-config">import { defineConfig } from 'vite'
+import react from '@vitejs/plugin-react'
+
+export default defineConfig({
+  plugins: [react()],
+  base: './'
+})</pre>
+                        </div>
+                    </div>
+
+                    <div class="bg-green-50 border-l-4 border-green-600 p-5 rounded-lg">
+                        <div class="flex justify-between items-start mb-3">
+                            <div>
+                                <h4 class="font-bold text-green-900 mb-2">🌐 Modifica tu <code>index.html</code></h4>
+                                <p class="text-sm text-green-800">Agrega este script al final, antes de &lt;/body&gt;</p>
+                            </div>
+                            <button onclick="copyCode('index-script')" class="copy-btn bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg text-sm font-bold transition">
+                                📋 Copiar
+                            </button>
+                        </div>
+                        <div class="command-box rounded-xl p-4 text-xs overflow-x-auto">
+<pre id="index-script">&lt;script type="module"&gt;
+  import React from 'react'
+  import ReactDOM from 'react-dom/client'
+  import App from './App.jsx'
+  
+  ReactDOM.createRoot(document.getElementById('root')).render(
+    &lt;React.StrictMode&gt;
+      &lt;App /&gt;
+    &lt;/React.StrictMode&gt;
+  )
+&lt;/script&gt;</pre>
+                        </div>
+                    </div>
+
+                    <div class="bg-amber-50 border-l-4 border-amber-600 p-5 rounded-lg">
+                        <div class="flex justify-between items-start mb-3">
+                            <div>
+                                <h4 class="font-bold text-amber-900 mb-2">📱 Crea: <code>App.jsx</code></h4>
+                                <p class="text-sm text-amber-800">Renombra tu código React actual a App.jsx (sin el HTML wrapper)</p>
+                            </div>
+                        </div>
+                        <div class="bg-white rounded-lg p-4 text-sm text-slate-700">
+                            <p>✓ Copia todo tu código desde <code>export default function App()</code> hasta el final</p>
+                            <p class="mt-2">✓ Guárdalo como <code>App.jsx</code></p>
+                            <p class="mt-2">✓ Asegúrate de mantener todos los imports al inicio</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Paso 3 -->
+            <div class="bg-white rounded-3xl shadow-2xl p-8 mb-8">
+                <div class="flex items-center gap-4 mb-6">
+                    <div class="w-12 h-12 bg-blue-600 text-white rounded-full flex items-center justify-center text-xl font-bold">3</div>
+                    <h2 class="text-2xl font-bold text-slate-900">Sube a GitHub</h2>
+                </div>
+
+                <div class="space-y-4">
+                    <div class="step bg-slate-50 rounded-xl p-5 border-l-4 border-blue-500">
+                        <div class="flex items-start gap-4">
+                            <div class="text-3xl">1️⃣</div>
+                            <div class="flex-1">
+                                <h3 class="font-bold text-slate-900 mb-2">Crea un repositorio en GitHub</h3>
+                                <p class="text-slate-600 mb-3">Ve a <a href="https://github.com/new" target="_blank" class="text-blue-600 underline font-semibold">github.com/new</a></p>
+                                <div class="bg-white rounded-lg p-4 border border-slate-200">
+                                    <p class="text-sm">✓ Nombre: <code class="bg-slate-100 px-2 py-1 rounded">conecta-crm-demo</code></p>
+                                    <p class="text-sm mt-2">✓ Público (para demo gratis)</p>
+                                    <p class="text-sm mt-2">✓ NO inicialices con README</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="step bg-slate-50 rounded-xl p-5 border-l-4 border-purple-500">
+                        <div class="flex items-start gap-4">
+                            <div class="text-3xl">2️⃣</div>
+                            <div class="flex-1">
+                                <h3 class="font-bold text-slate-900 mb-2">Sube tus archivos</h3>
+                                <div class="command-box rounded-xl p-4 mb-3">
+                                    <div class="flex justify-between items-center mb-2">
+                                        <span class="text-green-400 font-bold">Terminal:</span>
+                                        <button onclick="copyCode('git-commands')" class="text-xs bg-slate-700 hover:bg-slate-600 px-3 py-1 rounded">Copiar</button>
+                                    </div>
+                                    <pre id="git-commands" class="text-sm">cd tu-carpeta-del-crm
+git init
+git add .
+git commit -m "Demo CRM para cliente"
+git branch -M main
+git remote add origin https://github.com/TU-USUARIO/conecta-crm-demo.git
+git push -u origin main</pre>
+                                </div>
+                                <div class="bg-amber-50 border border-amber-200 rounded-lg p-3">
+                                    <p class="text-xs text-amber-800">⚠️ Reemplaza <strong>TU-USUARIO</strong> con tu nombre de usuario de GitHub</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Paso 4 -->
+            <div class="bg-gradient-to-br from-blue-600 to-purple-600 rounded-3xl shadow-2xl p-8 mb-8 text-white">
+                <div class="flex items-center gap-4 mb-6">
+                    <div class="w-12 h-12 bg-white text-blue-600 rounded-full flex items-center justify-center text-xl font-bold">4</div>
+                    <h2 class="text-2xl font-bold">Deploy en Vercel (¡Lo más fácil!)</h2>
+                </div>
+
+                <div class="space-y-4">
+                    <div class="bg-white/10 backdrop-blur rounded-xl p-6 border border-white/20">
+                        <div class="flex items-start gap-4">
+                            <div class="text-3xl">🔐</div>
+                            <div class="flex-1">
+                                <h3 class="font-bold text-xl mb-3">A. Conecta tu cuenta</h3>
+                                <ol class="space-y-2 text-sm">
+                                    <li>1. Ve a <a href="https://vercel.com" target="_blank" class="underline font-bold">vercel.com</a></li>
+                                    <li>2. Click en "Sign Up" (gratis)</li>
+                                    <li>3. Usa "Continue with GitHub"</li>
+                                    <li>4. Autoriza a Vercel</li>
+                                </ol>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="bg-white/10 backdrop-blur rounded-xl p-6 border border-white/20">
+                        <div class="flex items-start gap-4">
+                            <div class="text-3xl">🚀</div>
+                            <div class="flex-1">
+                                <h3 class="font-bold text-xl mb-3">B. Importa tu proyecto</h3>
+                                <ol class="space-y-2 text-sm">
+                                    <li>1. Click en "Add New..." → "Project"</li>
+                                    <li>2. Busca "conecta-crm-demo"</li>
+                                    <li>3. Click "Import"</li>
+                                    <li>4. Framework: <strong>Vite</strong> (auto-detectado)</li>
+                                    <li>5. Build Command: <code class="bg-black/30 px-2 py-1 rounded">npm run build</code></li>
+                                    <li>6. Output Directory: <code class="bg-black/30 px-2 py-1 rounded">dist</code></li>
+                                    <li>7. Click <strong>"Deploy"</strong></li>
+                                </ol>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="bg-green-500 rounded-xl p-6 border-2 border-green-300 pulse-slow">
+                        <div class="flex items-center gap-4">
+                            <div class="text-4xl">🎉</div>
+                            <div>
+                                <h3 class="font-bold text-xl mb-2">¡Listo en 2 minutos!</h3>
+                                <p class="text-green-50">Vercel te dará un link como: <code class="bg-black/30 px-3 py-1 rounded">conecta-crm-demo.vercel.app</code></p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- Método Alternativo Rápido -->
+        <div class="bg-gradient-to-br from-amber-500 to-orange-600 rounded-3xl shadow-2xl p-8 text-white">
+            <h2 class="text-2xl font-bold mb-4 flex items-center gap-3">
+                ⚡ MÉTODO ULTRA-RÁPIDO (Si tienes prisa)
+            </h2>
+            <div class="bg-white/20 backdrop-blur rounded-xl p-6 mb-4">
+                <h3 class="font-bold text-xl mb-3">Usar Vercel CLI (1 comando)</h3>
+                <div class="command-box rounded-xl p-4 mb-3">
+                    <div class="flex justify-between items-center mb-2">
+                        <span class="text-green-400 font-bold">Terminal:</span>
+                        <button onclick="copyCode('vercel-cli')" class="text-xs bg-slate-700 hover:bg-slate-600 px-3 py-1 rounded">Copiar</button>
+                    </div>
+                    <pre id="vercel-cli" class="text-sm">npm i -g vercel
+cd tu-carpeta-crm
+vercel</pre>
+                </div>
+                <p class="text-sm">Sigue las instrucciones en pantalla. ¡Link en 30 segundos!</p>
+            </div>
+
+            <div class="bg-red-900/50 backdrop-blur rounded-xl p-4 border-2 border-red-400">
+                <p class="font-bold mb-2">🚨 IMPORTANTE para la demo:</p>
+                <ul class="text-sm space-y-1">
+                    <li>✓ Los datos se pierden al refrescar (es normal en demo)</li>
+                    <li>✓ Las credenciales son: admin / 1234</li>
+                    <li>✓ No uses datos reales del cliente</li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <div class="mt-8 text-center">
+            <div class="bg-white/10 backdrop-blur rounded-2xl p-6 border border-white/20">
+                <p class="text-white text-sm">
+                    <strong>💬 ¿Problemas?</strong> Pregúntame y te ayudo con el paso específico.
+                    <br>
+                    <strong>🎯 Siguiente:</strong> Una vez publicado, te puedo ayudar a crear una presentación para el cliente.
+                </p>
+            </div>
+        </div>
+
+    </div>
+
+    <script>
+        function selectPlatform(platform) {
+            // Visual feedback
+            document.querySelectorAll('.platform-card').forEach(card => {
+                card.classList.remove('selected');
+            });
+            event.currentTarget.classList.add('selected');
+
+            // Show/hide instructions
+            if(platform !== 'vercel') {
+                alert('📌 Por ahora la guía está optimizada para Vercel (la más rápida). ¿Quieres que te explique ' + platform + '?');
+            }
+        }
+
+        function copyCode(elementId) {
+            const element = document.getElementById(elementId);
+            const text = element.textContent;
+            
+            navigator.clipboard.writeText(text).then(() => {
+                const btn = event.target;
+                const originalText = btn.textContent;
+                btn.textContent = '✅ Copiado!';
+                btn.classList.add('bg-green-600');
+                
+                setTimeout(() => {
+                    btn.textContent = originalText;
+                    btn.classList.remove('bg-green-600');
+                }, 2000);
+            });
+        }
+    </script>
+
+</body>
+</html>

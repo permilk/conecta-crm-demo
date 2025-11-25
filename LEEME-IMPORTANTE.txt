@@ -1,0 +1,49 @@
+⚠️ IMPORTANTE: ACCIÓN REQUERIDA ⚠️
+===================================
+
+El archivo src/App.jsx DEBE contener tu código React del CRM.
+
+📝 QUÉ HACER:
+
+1. Abre tu archivo actual del CRM (el que me compartiste)
+
+2. Copia TODO el código desde esta línea:
+   import React, { useState, useMemo, useEffect, useRef } from 'react';
+   
+   Hasta el final:
+   ...
+
+3. Pégalo en: src/App.jsx
+
+4. IMPORTANTE: Elimina estas líneas si existen:
+   - <!DOCTYPE html>
+   - <html>
+   - <head>
+   - <body>
+   Solo debe quedar el código React puro.
+
+5. Verifica que la última línea sea:
+   const MenuButton = ...
+
+✅ EJEMPLO CORRECTO de src/App.jsx:
+
+```javascript
+import React, { useState, useMemo, useEffect, useRef } from 'react';
+import { LayoutDashboard, Users, Phone, ... } from 'lucide-react';
+import { BarChart, Bar, XAxis, ... } from 'recharts';
+
+// Tu código del CRM aquí...
+
+export default function App() {
+  // ...todo tu código
+}
+
+// Componentes auxiliares
+const MenuButton = ({ active, onClick, icon: Icon, label }) => (
+  // ...
+);
+```
+
+⚠️ Sin este paso, el deploy NO funcionará.
+
+🆘 Si tienes dudas, pregúntame y te ayudo a identificar qué copiar exactamente.
